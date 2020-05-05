@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>JimS.FAQs.Module</id>
+    <version>0.9.0</version>
+    <authors>James Spillane</authors>
+    <owners>James Spillane</owners>
+    <title>FAQs</title>
+    <description>Publish and manage FAQs(frequently asked questions)</description>
+    <copyright>James Spillane</copyright>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/oqtane/oqtane.framework</projectUrl>
+    <iconUrl>https://www.oqtane.org/Portals/0/icon.jpg</iconUrl>
+    <tags>oqtane module</tags>
+    <releaseNotes></releaseNotes>
+    <summary></summary>
+    <dependencies>
+      <dependency id="Oqtane.Framework" version="0.9.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="..\Client\bin\Release\netstandard2.1\JimS.FAQs.Module.Client.dll" target="lib" /> 
+    <file src="..\Client\bin\Release\netstandard2.1\JimS.FAQs.Module.Client.pdb" target="lib" /> 
+    <file src="..\Server\bin\Release\netcoreapp3.1\JimS.FAQs.Module.Server.dll" target="lib" /> 
+    <file src="..\Server\bin\Release\netcoreapp3.1\JimS.FAQs.Module.Server.pdb" target="lib" /> 
+    <file src="..\Shared\bin\Release\netstandard2.1\JimS.FAQs.Module.Shared.dll" target="lib" /> 
+    <file src="..\Shared\bin\Release\netstandard2.1\JimS.FAQs.Module.Shared.pdb" target="lib" /> 
+    <file src="..\wwwroot\**\*.*" target="wwwroot" /> 
+  </files>
+</package>

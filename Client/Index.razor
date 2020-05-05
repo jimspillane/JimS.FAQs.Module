@@ -1,0 +1,77 @@
+@using JimS.FAQs.Services
+@using JimS.FAQs.Models
+
+@namespace JimS.FAQs.Modules
+@inherits ModuleBase
+@inject NavigationManager NavigationManager
+@inject HttpClient http
+@inject SiteState sitestate
+
+@if (_FAQs == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <ActionLink Action="Add" Security="SecurityAccessLevel.Edit" Text="Add FAQ" />
+    <br />
+    @if (@_FAQs.Count != 0)
+    {
+        <section class="py-1">
+            <div class="accordion" id="@($"faq-{ModuleState.PageModuleId}")">
+                @foreach (var item in _FAQs.Select((x, i) => new { FAQ = x, Index = i }))
+                {
+                    <div class="mb-2 border-bottom">
+                        <ActionLink Action="Edit" Parameters="@($"id=" + item.FAQ.FAQId)" />
+                        <ActionDialog Header="Delete FAQ" Message="@($"Are You Sure You Wish To Delete The {item.FAQ.Question} FAQ?")" Action="Delete" Security="SecurityAccessLevel.Edit" Class="btn btn-danger" OnClick="@(async () => await Delete(item.FAQ))" />
+                        <h5 id="@($"faq-heading-{ModuleState.PageModuleId}-{item.Index}")">
+                            <button class="btn btn-link btn-block text-left d-flex text-decoration-none" type="button" data-toggle="collapse" data-target="@($"#faq-collapse-{ModuleState.PageModuleId}-{item.Index}")" aria-expanded="false" aria-controls="@($"faq-collapse-{ModuleState.PageModuleId}-{item.Index}")" style="white-space: normal !important; word-wrap: break-word">@item.FAQ.Question<span class="oi oi-chevron-bottom p-1 ml-auto my-auto"></span></button>
+                        </h5>
+                        <div class="collapse" id="@($"faq-collapse-{ModuleState.PageModuleId}-{item.Index}")" aria-labelledby="@($"faq-heading-{ModuleState.PageModuleId}-{item.Index}")" data-parent="@($"#faq-{ModuleState.PageModuleId}")">
+                            <p>@item.FAQ.Answer</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </section>
+    }
+    else
+    {
+        <p>No FAQs To Display</p>
+    }
+}
+
+@code {
+    IFAQService FAQService;
+    List<FAQ> _FAQs;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            FAQService = new FAQService(http, sitestate, NavigationManager);
+            _FAQs = await FAQService.GetFAQsAsync(ModuleState.ModuleId);
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Loading FAQ {Error}", ex.Message);
+            AddModuleMessage("Error Loading FAQ", MessageType.Error);
+        }
+    }
+
+    private async Task Delete(FAQ FAQ)
+    {
+        try
+        {
+            await FAQService.DeleteFAQAsync(FAQ.FAQId);
+            await logger.LogInformation("FAQ Deleted {FAQ}", FAQ);
+            _FAQs = await FAQService.GetFAQsAsync(ModuleState.ModuleId);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Deleting FAQ {FAQ} {Error}", FAQ, ex.Message);
+            AddModuleMessage("Error Deleting FAQ", MessageType.Error);
+        }
+    }
+}

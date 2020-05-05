@@ -1,0 +1,143 @@
+@using Oqtane.Modules.Controls
+@using JimS.FAQs.Services
+@using JimS.FAQs.Models
+
+@namespace JimS.FAQs.Modules
+@inherits ModuleBase
+@inject NavigationManager NavigationManager
+@inject HttpClient http
+@inject SiteState sitestate
+
+<table class="table table-borderless">
+    <tr>
+        <td>
+            <label class="control-label">Question: </label>
+        </td>
+        <td>
+            <textarea id="_question" class="form-control" @bind="@_question" cols="40" rows="5"></textarea>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <label class="control-label">Answer: </label>
+        </td>
+        <td>
+            <textarea id="_answer" class="form-control" @bind="@_answer" cols="40" rows="5"></textarea>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <label class="control-label">Order: </label>
+        </td>
+        <td>
+            <input id="_order" class="form-control" @bind="@_order" />
+        </td>
+    </tr>
+</table>
+<button type="button" class="btn btn-success" @onclick="Save">Save</button>
+<NavLink class="btn btn-secondary" href="@NavigateUrl()">Cancel</NavLink>
+<br />
+<br />
+@if (PageState.Action == "Edit")
+{
+    <AuditInfo CreatedBy="@_createdby" CreatedOn="@_createdon" ModifiedBy="@_modifiedby" ModifiedOn="@_modifiedon"></AuditInfo>
+}
+
+@code {
+    public override SecurityAccessLevel SecurityAccessLevel => SecurityAccessLevel.Edit;
+    public override string Actions => "Add,Edit";
+
+    IFAQService FAQService;
+    int _id;
+    string _question;
+    string _answer;
+    string _order;
+    string _createdby;
+    DateTime _createdon;
+    string _modifiedby;
+    DateTime _modifiedon;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            FAQService = new FAQService(http, sitestate, NavigationManager);
+            if (PageState.Action == "Edit")
+            {
+                _id = Int32.Parse(PageState.QueryString["id"]);
+                var FAQ = await FAQService.GetFAQAsync(_id, ModuleState.ModuleId);
+                if (FAQ != null)
+                {
+                    _question = FAQ.Question;
+                    _answer = FAQ.Answer;
+                    _order = FAQ.Order.ToString();
+                    _createdby = FAQ.CreatedBy;
+                    _createdon = FAQ.CreatedOn;
+                    _modifiedby = FAQ.ModifiedBy;
+                    _modifiedon = FAQ.ModifiedOn;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Loading FAQ {FAQId} {Error}", _id, ex.Message);
+            AddModuleMessage("Error Loading FAQ", MessageType.Error);
+        }
+    }
+
+    private async Task Save()
+    {
+        if (_question.Length > 4000)
+        {
+            AddModuleMessage("Please limit the Question to 4000 characters", MessageType.Warning);
+            return;
+        }
+
+        if (_answer.Length > 4000)
+        {
+            AddModuleMessage("Please limit the Answer to 4000 characters", MessageType.Warning);
+            return;
+        }
+
+        if (!int.TryParse(_order, out var order) || order <= -1 || order >= 100)
+        {
+            AddModuleMessage("Please set the Order between 1 and 99", MessageType.Warning);
+            return;
+        }
+
+        try
+        {
+            if (PageState.Action == "Add")
+            {
+                var FAQ = new FAQ
+                {
+                    ModuleId = ModuleState.ModuleId,
+                    Question = _question,
+                    Answer = _answer,
+                    Order = order
+                };
+
+                FAQ = await FAQService.AddFAQAsync(FAQ);
+
+                await logger.LogInformation("FAQ Added {FAQ}", FAQ);
+            }
+            else
+            {
+                var FAQ = await FAQService.GetFAQAsync(_id, ModuleState.ModuleId);
+                FAQ.Question = _question;
+                FAQ.Answer = _answer;
+                FAQ.Order = order;
+
+                await FAQService.UpdateFAQAsync(FAQ);
+
+                await logger.LogInformation("FAQ Updated {FAQ}", FAQ);
+            }
+            NavigationManager.NavigateTo(NavigateUrl());
+        }
+        catch (Exception ex)
+        {
+            await logger.LogError(ex, "Error Saving FAQ {Error}", ex.Message);
+            AddModuleMessage("Error Saving FAQ", MessageType.Error);
+        }
+    }
+}
