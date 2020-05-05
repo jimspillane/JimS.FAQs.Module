@@ -13,6 +13,6 @@ FAQ module edit list:
 
 ![FAQ Module Edit List](https://github.com/jimspillane/JimS.FAQs.Module/blob/master/ScreenShots/FAQEditList.png?raw=true "FAQ Module Edit List")
 
-FAQ module edit list: 
+FAQ module edit: 
 
-![FAQ Module Edit](https://github.com/jimspillane/JimS.FAQs.Module/blob/master/ScreenShots/FAQEditList.png?raw=true "FAQ Module Edit")
+![FAQ Module Edit](https://github.com/jimspillane/JimS.FAQs.Module/blob/master/ScreenShots/FAQEdit.png?raw=true "FAQ Module Edit")
